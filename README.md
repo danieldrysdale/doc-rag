@@ -1,6 +1,6 @@
 # doc-rag
 
-A RAG (Retrieval-Augmented Generation) pipeline that lets you ask natural language questions of your own documents, powered by Claude and ChromaDB.
+A fully local RAG (Retrieval-Augmented Generation) pipeline for querying your own documents in natural language. No API keys, no cloud, works offline.
 
 Drop in PDFs, text files, or markdown — ask questions in plain English — get answers grounded in your documents with source citations.
 
@@ -8,15 +8,16 @@ Drop in PDFs, text files, or markdown — ask questions in plain English — get
 
 1. **Ingest** — documents are split into overlapping chunks and embedded locally using `all-MiniLM-L6-v2`
 2. **Store** — embeddings are persisted in a local ChromaDB vector database
-3. **Query** — your question is embedded, the most relevant chunks are retrieved, and Claude answers based only on those chunks
-4. **Answer** — response includes source citations; Claude says when it can't find an answer rather than hallucinating
+3. **Query** — your question is embedded, the most relevant chunks are retrieved, and Ollama generates an answer based only on those chunks
+4. **Answer** — response includes source citations; the model says when it can't find an answer rather than hallucinating
 
 ## Features
 
 - PDF, plain text, and markdown support
+- Fully local — embeddings and inference run on your machine, no API costs
 - Overlapping chunk strategy preserves context at boundaries
 - Source citations in every answer
-- Confidence-aware — Claude explicitly says when the answer isn't in the documents
+- Confidence-aware — explicitly says when the answer isn't in the documents
 - Persistent vector store — ingest once, query many times
 - 19 pytest tests, no network required (fake embeddings in tests)
 
@@ -30,7 +31,7 @@ doc-rag/
 │   ├── config.py       # configuration and constants
 │   ├── chunker.py      # document loading and text chunking
 │   ├── store.py        # ChromaDB vector store
-│   └── rag.py          # RAG pipeline (retrieve + generate with Claude)
+│   └── rag.py          # RAG pipeline (retrieve + generate with Ollama)
 ├── tests/
 │   ├── test_chunker.py
 │   └── test_store.py
@@ -38,6 +39,21 @@ doc-rag/
 │   ├── refund_policy.md
 │   └── employee_handbook.md
 └── pyproject.toml
+```
+
+## Prerequisites
+
+Install [Ollama](https://ollama.com) and pull a model:
+
+```bash
+brew install ollama
+ollama pull llama3.2
+```
+
+Start the Ollama service before querying:
+
+```bash
+ollama serve
 ```
 
 ## Installation
@@ -49,16 +65,6 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
 ```
-
-## Setup
-
-You need an Anthropic API key:
-
-```bash
-export ANTHROPIC_API_KEY="sk-ant-..."
-```
-
-Add to `~/.zshrc` or `~/.bashrc` to persist across sessions.
 
 ## Usage
 
@@ -112,16 +118,16 @@ $ doc-rag query --show-sources "Can I return software I've already activated?"
 Question: Can I return software I've already activated?
 Searching...
 
-Answer: No. According to the refund policy, software licenses and digital
+Answer: According to the refund policy, software licenses and digital
 downloads are non-refundable once activated.
 
 Sources:
-  - refund_policy.md (document)  [similarity: 0.91]
+  - refund_policy.md (document)  [similarity: 0.52]
 ```
 
 ## Running tests
 
-Tests use fake embeddings — no API keys or network access required:
+Tests use fake embeddings — no network access required:
 
 ```bash
 pytest -v
@@ -137,10 +143,13 @@ Key settings in `src/doc_rag/config.py`:
 | `CHUNK_SIZE` | 500 | Characters per chunk |
 | `CHUNK_OVERLAP` | 100 | Overlap between chunks |
 | `TOP_K` | 5 | Chunks retrieved per query |
-| `CLAUDE_MODEL` | `claude-haiku-4-5-20251001` | Claude model for answers |
+| `OLLAMA_MODEL` | `llama3.2` | Ollama model for answers |
+| `OLLAMA_URL` | `http://localhost:11434` | Ollama service URL |
 
-Override the storage directory:
+Override via environment variables:
 
 ```bash
 export DOC_RAG_CHROMA_DIR=/path/to/custom/store
+export OLLAMA_MODEL=mistral
+export OLLAMA_URL=http://remote-host:11434
 ```
