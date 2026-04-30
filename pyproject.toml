@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "doc-rag"
+version = "0.2.0"
+description = "A RAG pipeline for querying your own documents using Ollama and ChromaDB"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "chromadb>=1.5",
+    "sentence-transformers>=3.0",
+    "pypdf>=4.0",
+]
+
+[project.scripts]
+doc-rag = "doc_rag.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
