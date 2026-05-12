@@ -8,12 +8,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies first for better layer caching
+# Copy everything needed to build the package
 COPY pyproject.toml .
-RUN pip install --no-cache-dir ".[dev]" || pip install --no-cache-dir .
-
-# Copy source
+COPY README.md .
 COPY src/ src/
+
+# Install the package and dependencies
+RUN pip install --no-cache-dir ".[dev]" || pip install --no-cache-dir .
 
 # Copy the FastAPI wrapper
 COPY api.py .
