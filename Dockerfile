@@ -10,7 +10,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy everything needed to build the package
 COPY pyproject.toml .
-COPY README.md .
 COPY src/ src/
 
 # Install the package and dependencies
