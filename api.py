@@ -131,7 +131,7 @@ def ingest(request: IngestRequest) -> IngestResponse:
         total_chunks = 0
         for file in files:
             chunks = chunker.load_and_chunk(file)
-            store.add_chunks(chunks)
+            store.ingest(chunks, file.name)
             total_chunks += len(chunks)
 
         return IngestResponse(
